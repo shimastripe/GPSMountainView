@@ -3,6 +3,10 @@ package com.shimastripe.gpsmountainview;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -16,26 +20,66 @@ import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity implements LocationListener {
+public class MainActivity extends AppCompatActivity implements LocationListener, SensorEventListener {
 
     private final static String TAG = "MainActivity";
 
+    private SensorManager sensorMgr;
+    private Sensor accelerometer;
+    private Sensor magneticField;
+    private float[] fAccell = null;
+    private float[] fMagnetic = null;
+
     private LocationManager locationManager;
-    private TextView textView1, textView2;
+    private TextView textView1, textView2, textView3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.i(TAG, "onCreate");
         setContentView(R.layout.activity_main);
 
         textView1 = (TextView) findViewById(R.id.text_view1);
         textView2 = (TextView) findViewById(R.id.text_view2);
+        textView3 = (TextView) findViewById(R.id.text_view3);
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
         } else {
             locationStart();
         }
+
+        sensorMgr = (SensorManager) getSystemService(SENSOR_SERVICE);
+        accelerometer = sensorMgr.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        if (accelerometer == null) {
+            Toast.makeText(this, getString(R.string.toast_no_accel_error),
+                    Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
+        magneticField = sensorMgr.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+        if (magneticField == null) {
+            Toast.makeText(this, getString(R.string.toast_no_accel_error),
+                    Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.i(TAG, "onResume");
+        sensorMgr.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
+        sensorMgr.registerListener(this, magneticField, SensorManager.SENSOR_DELAY_FASTEST);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.i(TAG, "onPause");
+        sensorMgr.unregisterListener(this);
     }
 
     private void locationStart() {
@@ -55,7 +99,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
-
             Log.d(TAG, "checkSelfPermission false");
             return;
         }
@@ -109,5 +152,55 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     public void onProviderDisabled(String provider) {
         // Called when the provider is disabled by the user.
         Log.d(TAG, "onProviderDisabled");
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        Log.i(TAG, "onAccuracyChanged: ");
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        Log.i(TAG, "onSensorChanged: ");
+        switch (event.sensor.getType()) {
+            case Sensor.TYPE_ACCELEROMETER:
+                fAccell = event.values.clone();
+                break;
+            case Sensor.TYPE_MAGNETIC_FIELD:
+                fMagnetic = event.values.clone();
+                break;
+        }
+
+        if (fAccell != null && fMagnetic != null) {
+            // 回転行列を得る
+            float[] inR = new float[9];
+            SensorManager.getRotationMatrix(
+                    inR,
+                    null,
+                    fAccell,
+                    fMagnetic);
+            // ワールド座標とデバイス座標のマッピングを変換する
+            float[] outR = new float[9];
+            SensorManager.remapCoordinateSystem(
+                    inR,
+                    SensorManager.AXIS_X, SensorManager.AXIS_Y,
+                    outR);
+            // 姿勢を得る
+            float[] fAttitude = new float[3];
+            SensorManager.getOrientation(
+                    outR,
+                    fAttitude);
+
+            String buf =
+                    "---------- Orientation --------\n" +
+                            String.format("方位角\n\t%f\n", rad2deg(fAttitude[0])) +
+                            String.format("前後の傾斜\n\t%f\n", rad2deg(fAttitude[1])) +
+                            String.format("左右の傾斜\n\t%f\n", rad2deg(fAttitude[2]));
+            textView3.setText(buf);
+        }
+    }
+
+    private float rad2deg(float rad) {
+        return rad * (float) 180.0 / (float) Math.PI;
     }
 }
