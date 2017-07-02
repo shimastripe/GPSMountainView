@@ -18,23 +18,28 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements LocationListener {
 
+    private final static String TAG = "MainActivity";
+
     private LocationManager locationManager;
+    private TextView textView1, textView2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        textView1 = (TextView) findViewById(R.id.text_view1);
+        textView2 = (TextView) findViewById(R.id.text_view2);
+
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
-        }
-        else{
+        } else {
             locationStart();
         }
     }
 
-    private void locationStart(){
-        Log.d("debug","locationStart()");
+    private void locationStart() {
+        Log.d(TAG, "locationStart()");
 
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
@@ -43,15 +48,15 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         if (!gpsEnabled) {
             Intent settingsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
             startActivity(settingsIntent);
-            Log.d("debug", "not gpsEnable, startActivity");
+            Log.d(TAG, "not gpsEnable, startActivity");
         } else {
-            Log.d("debug", "gpsEnabled");
+            Log.d(TAG, "gpsEnabled");
         }
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
 
-            Log.d("debug", "checkSelfPermission false");
+            Log.d(TAG, "checkSelfPermission false");
             return;
         }
 
@@ -62,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         if (requestCode == 1000) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Log.d("debug","checkSelfPermission true");
+                Log.d(TAG, "checkSelfPermission true");
                 locationStart();
                 return;
 
@@ -77,32 +82,32 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     public void onStatusChanged(String provider, int status, Bundle extras) {
         switch (status) {
             case LocationProvider.AVAILABLE:
-                Log.d("debug", "LocationProvider.AVAILABLE");
+                Log.d(TAG, "LocationProvider.AVAILABLE");
                 break;
             case LocationProvider.OUT_OF_SERVICE:
-                Log.d("debug", "LocationProvider.OUT_OF_SERVICE");
+                Log.d(TAG, "LocationProvider.OUT_OF_SERVICE");
                 break;
             case LocationProvider.TEMPORARILY_UNAVAILABLE:
-                Log.d("debug", "LocationProvider.TEMPORARILY_UNAVAILABLE");
+                Log.d(TAG, "LocationProvider.TEMPORARILY_UNAVAILABLE");
                 break;
         }
     }
 
     @Override
     public void onLocationChanged(Location location) {
-        TextView textView1 = (TextView) findViewById(R.id.text_view1);
-        TextView textView2 = (TextView) findViewById(R.id.text_view2);
-        textView1.setText("Latitude:"+location.getLatitude());
-        textView2.setText("Longitude:"+location.getLongitude());
+        textView1.setText("Latitude:" + location.getLatitude());
+        textView2.setText("Longitude:" + location.getLongitude());
     }
 
     @Override
     public void onProviderEnabled(String provider) {
         // Called when the provider is enabled by the user.
+        Log.d(TAG, "onProviderEnabled()");
     }
 
     @Override
     public void onProviderDisabled(String provider) {
         // Called when the provider is disabled by the user.
+        Log.d(TAG, "onProviderDisabled");
     }
 }
