@@ -138,6 +138,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
     @Override
     public void onLocationChanged(Location location) {
+        Log.d(TAG, "onLocationChanged");
         textView1.setText("Latitude:" + location.getLatitude());
         textView2.setText("Longitude:" + location.getLongitude());
     }
@@ -161,7 +162,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        Log.i(TAG, "onSensorChanged: ");
         switch (event.sensor.getType()) {
             case Sensor.TYPE_ACCELEROMETER:
                 fAccell = event.values.clone();
