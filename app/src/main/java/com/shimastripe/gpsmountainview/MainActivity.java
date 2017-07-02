@@ -36,13 +36,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     private void locationStart(){
         Log.d("debug","locationStart()");
 
-        // LocationManager インスタンス生成
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
         final boolean gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
 
         if (!gpsEnabled) {
-            // GPSを設定するように促す
             Intent settingsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
             startActivity(settingsIntent);
             Log.d("debug", "not gpsEnable, startActivity");
@@ -60,19 +58,15 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 50, this);
     }
 
-    // 結果の受け取り
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         if (requestCode == 1000) {
-            // 使用が許可された
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Log.d("debug","checkSelfPermission true");
-
                 locationStart();
                 return;
 
             } else {
-                // それでも拒否された時の対応
                 Toast toast = Toast.makeText(this, "これ以上なにもできません", Toast.LENGTH_SHORT);
                 toast.show();
             }
@@ -96,22 +90,19 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
     @Override
     public void onLocationChanged(Location location) {
-        // 緯度の表示
         TextView textView1 = (TextView) findViewById(R.id.text_view1);
-        textView1.setText("Latitude:"+location.getLatitude());
-
-        // 経度の表示
         TextView textView2 = (TextView) findViewById(R.id.text_view2);
-        textView2.setText("Latitude:"+location.getLongitude());
+        textView1.setText("Latitude:"+location.getLatitude());
+        textView2.setText("Longitude:"+location.getLongitude());
     }
 
     @Override
     public void onProviderEnabled(String provider) {
-
+        // Called when the provider is enabled by the user.
     }
 
     @Override
     public void onProviderDisabled(String provider) {
-
+        // Called when the provider is disabled by the user.
     }
 }
