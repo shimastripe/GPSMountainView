@@ -104,6 +104,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         }
 
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 50, this);
+        setLocation(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
     }
 
     @Override
@@ -139,6 +140,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     @Override
     public void onLocationChanged(Location location) {
         Log.d(TAG, "onLocationChanged");
+        setLocation(location);
+    }
+
+    private void setLocation(Location location) {
         textView1.setText("Latitude:" + location.getLatitude());
         textView2.setText("Longitude:" + location.getLongitude());
     }
