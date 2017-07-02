@@ -20,6 +20,10 @@ import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import retrofit2.Call;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 public class MainActivity extends AppCompatActivity implements LocationListener, SensorEventListener {
 
     private final static String TAG = "MainActivity";
@@ -65,6 +69,14 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             finish();
             return;
         }
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://api.apigw.smt.docomo.ne.jp")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        DocomoAPIInterface service = retrofit.create(DocomoAPIInterface.class);
+        Call<MountainRepository> call = service.getMountainData(DocomoAPIInterface.TARGET_URL);
     }
 
     @Override
