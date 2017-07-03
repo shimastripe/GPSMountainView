@@ -1,5 +1,11 @@
 apply plugin: 'com.android.application'
 
+allprojects {
+    repositories {
+        maven { url "https://jitpack.io" }
+    }
+}
+
 android {
     compileSdkVersion 25
     buildToolsVersion "25.0.3"
@@ -32,4 +38,6 @@ dependencies {
     compile 'com.squareup.retrofit2:converter-gson:2.3.0'
     compile 'com.google.code.gson:gson:2.6.2'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.2.1'
+
+    compile 'com.github.PhilJay:MPAndroidChart:v3.0.2'
 }

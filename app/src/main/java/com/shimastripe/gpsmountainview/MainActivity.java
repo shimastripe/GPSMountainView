@@ -3,6 +3,7 @@ package com.shimastripe.gpsmountainview;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -20,6 +21,14 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -44,6 +53,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     private double latitude;
     private double longtitude;
     private TextView textView1, textView2, textView3;
+
+    private LineChart lineChart;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             finish();
             return;
         }
+        lineChart = (LineChart)findViewById(R.id.chart1);
     }
 
     @Override
@@ -108,6 +120,25 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             public void onResponse(Call<MountainRepository> call, Response<MountainRepository> response) {
                 Log.d(TAG, "Succeed to request");
                 MountainRepository mr = response.body();
+                if (mr != null) {
+                    ArrayList<Entry> entries = new ArrayList<Entry>();
+                    List<Integer> list = mr.getRidge();
+                    for (int i = 0; i < list.size(); i++) {
+                        entries.add(new Entry(i, list.get(i)));
+                    }
+                    //データをセット
+                    LineDataSet dataSet = new LineDataSet(entries,"weight");
+                    //LineDataインスタンス生成
+                    LineData data = new LineData(dataSet);
+                    //LineDataをLineChartにセット
+                    lineChart.setData(data);
+
+                    //背景色
+                    lineChart.setBackgroundColor(Color.WHITE);
+
+                    //アニメーション
+                    lineChart.animateX(1200);
+                }
             }
 
             @Override
