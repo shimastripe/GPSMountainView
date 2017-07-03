@@ -37,7 +37,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     private float[] fAccell = null;
     private float[] fMagnetic = null;
     private float azimuth;
-    private float altura;
+    private float alturaV;
+    private float alturaH;
 
     private LocationManager locationManager;
     private double latitude;
@@ -102,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                 .build();
 
         DocomoAPIInterface service = retrofit.create(DocomoAPIInterface.class);
-        service.getMountainData(latitude, longtitude, azimuth, altura, 45, getString(R.string.DOCOMO_API_KEY)).enqueue(new Callback<MountainRepository>() {
+        service.getMountainData(latitude, longtitude, azimuth, alturaH, 45, getString(R.string.DOCOMO_API_KEY)).enqueue(new Callback<MountainRepository>() {
             @Override
             public void onResponse(Call<MountainRepository> call, Response<MountainRepository> response) {
                 Log.d(TAG, "Succeed to request");
@@ -237,13 +238,14 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                     fAttitude);
 
             azimuth = rad2deg(fAttitude[0]);
-            altura = rad2deg(fAttitude[1]);
+            alturaV = rad2deg(fAttitude[1]);
+            alturaH = rad2deg(fAttitude[2]);
 
             String buf =
                     "---------- Orientation --------\n" +
                             String.format("方位角\n\t%f\n", azimuth) +
-                            String.format("前後の傾斜\n\t%f\n", altura) +
-                            String.format("左右の傾斜\n\t%f\n", rad2deg(fAttitude[2]));
+                            String.format("前後の傾斜(縦向き)\n\t%f\n", alturaV) +
+                            String.format("左右の傾斜(縦向き)\n\t%f\n", alturaH);
             textView3.setText(buf);
         }
     }

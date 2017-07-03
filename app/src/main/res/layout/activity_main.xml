@@ -8,13 +8,6 @@
     tools:context="com.shimastripe.gpsmountainview.MainActivity">
 
     <TextView
-        android:text="Test GPS"
-        android:textSize="20sp"
-        android:layout_margin="20dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
-    <TextView
         android:id="@+id/text_view1"
         android:textSize="20sp"
         android:layout_margin="20dp"
