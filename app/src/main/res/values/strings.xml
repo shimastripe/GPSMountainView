@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">GPSMountainView</string>
     <string name="toast_no_accel_error">No accelerometers available</string>
+    <string name="start_button_label">Call API</string>
 </resources>

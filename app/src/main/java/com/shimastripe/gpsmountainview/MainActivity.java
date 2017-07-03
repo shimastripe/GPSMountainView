@@ -17,10 +17,13 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -33,8 +36,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     private Sensor magneticField;
     private float[] fAccell = null;
     private float[] fMagnetic = null;
+    private float azimuth;
+    private float altura;
 
     private LocationManager locationManager;
+    private double latitude;
+    private double longtitude;
     private TextView textView1, textView2, textView3;
 
     @Override
@@ -69,14 +76,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             finish();
             return;
         }
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://api.apigw.smt.docomo.ne.jp")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        DocomoAPIInterface service = retrofit.create(DocomoAPIInterface.class);
-        Call<MountainRepository> call = service.getMountainData(DocomoAPIInterface.TARGET_URL);
     }
 
     @Override
@@ -92,6 +91,30 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         super.onPause();
         Log.i(TAG, "onPause");
         sensorMgr.unregisterListener(this);
+    }
+
+    public void onClickStartButton(View view) {
+        Log.d(TAG, "onCliclStartButton()");
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(DocomoAPIInterface.END_POINT)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        DocomoAPIInterface service = retrofit.create(DocomoAPIInterface.class);
+        service.getMountainData(latitude, longtitude, azimuth, altura, 45, getString(R.string.DOCOMO_API_KEY)).enqueue(new Callback<MountainRepository>() {
+            @Override
+            public void onResponse(Call<MountainRepository> call, Response<MountainRepository> response) {
+                Log.d(TAG, "Succeed to request");
+                MountainRepository mr = response.body();
+            }
+
+            @Override
+            public void onFailure(Call<MountainRepository> call, Throwable t) {
+                Log.d(TAG, "Failed to request");
+                Log.d(TAG,t.toString());
+            }
+        });
     }
 
     private void locationStart() {
@@ -116,7 +139,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         }
 
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 50, this);
-        setLocation(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
+        Location loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        latitude = loc.getLatitude();
+        longtitude = loc.getLongitude();
+        setLocation(latitude, longtitude);
     }
 
     @Override
@@ -152,12 +178,14 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     @Override
     public void onLocationChanged(Location location) {
         Log.d(TAG, "onLocationChanged");
-        setLocation(location);
+        latitude = location.getLatitude();
+        longtitude = location.getLongitude();
+        setLocation(latitude, longtitude);
     }
 
-    private void setLocation(Location location) {
-        textView1.setText("Latitude:" + location.getLatitude());
-        textView2.setText("Longitude:" + location.getLongitude());
+    private void setLocation(double latitude, double longtitude) {
+        textView1.setText("Latitude:" + latitude);
+        textView2.setText("Longitude:" + longtitude);
     }
 
     @Override
@@ -208,10 +236,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                     outR,
                     fAttitude);
 
+            azimuth = rad2deg(fAttitude[0]);
+            altura = rad2deg(fAttitude[1]);
+
             String buf =
                     "---------- Orientation --------\n" +
-                            String.format("方位角\n\t%f\n", rad2deg(fAttitude[0])) +
-                            String.format("前後の傾斜\n\t%f\n", rad2deg(fAttitude[1])) +
+                            String.format("方位角\n\t%f\n", azimuth) +
+                            String.format("前後の傾斜\n\t%f\n", altura) +
                             String.format("左右の傾斜\n\t%f\n", rad2deg(fAttitude[2]));
             textView3.setText(buf);
         }

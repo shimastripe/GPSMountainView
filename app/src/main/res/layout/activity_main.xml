@@ -38,4 +38,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onClickStartButton"
+        android:text="@string/start_button_label"
+        android:textSize="@dimen/button_text_size" />
+
 </android.widget.LinearLayout>
