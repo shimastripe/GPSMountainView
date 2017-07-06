@@ -10,6 +10,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
+import android.nfc.Tag;
 import android.os.Build;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -104,6 +105,38 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         lineChart = (LineChart) findViewById(R.id.chart1);
     }
 
+    protected synchronized void buildGoogleApiClient() {
+        Log.d(TAG, "buildGoogleApiClient");
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+    }
+
+    private void createLocationRequest() {
+        Log.d(TAG, "createLocationRequest");
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(5000);
+        mLocationRequest.setFastestInterval(5000);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+    }
+
+    protected void buildLocationSettingsRequest() {
+        Log.d(TAG, "buildLocationSettingsRequest");
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
+        builder.addLocationRequest(mLocationRequest);
+        mLocationSettingsRequest = builder.build();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Log.i(TAG, "onStart");
+        mGoogleApiClient.connect();
+        Log.i(TAG, "Connect to Google Api");
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -116,13 +149,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 startLocationUpdates();
             }
         }
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        Log.i(TAG, "onStart");
-        mGoogleApiClient.connect();
     }
 
     @Override
@@ -210,28 +236,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
-    protected synchronized void buildGoogleApiClient() {
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
-    }
-
-    private void createLocationRequest() {
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(5000);
-        mLocationRequest.setFastestInterval(5000);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-    }
-
-    protected void buildLocationSettingsRequest() {
-        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
-        builder.addLocationRequest(mLocationRequest);
-        mLocationSettingsRequest = builder.build();
-    }
-
     public static boolean isLocationEnabled(Context context) {
+        Log.d(TAG, "isLocationEnabled");
         int locationMode = 0;
         String locationProviders;
 
@@ -250,7 +256,25 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
+    private void updateLocationUI() {
+        Log.d(TAG, "updateLocationUI");
+        if (mCurrentLocation != null) {
+            setLocation();
+        } else {
+            startLocationUpdates();
+        }
+    }
+
+    private void setLocation() {
+        Log.d(TAG, "setLocation");
+        if (mCurrentLocation != null) {
+            textView1.setText("Latitude:" + mCurrentLocation.getLatitude());
+            textView2.setText("Longitude:" + mCurrentLocation.getLongitude());
+        }
+    }
+
     protected void startLocationUpdates() {
+        Log.d(TAG, "startLocationUpdates");
         if (ActivityCompat.checkSelfPermission(
                 this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
@@ -272,65 +296,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         });
 
-    }
-
-    private void updateLocationUI() {
-        if (mCurrentLocation != null) {
-            setLocation();
-        } else {
-            startLocationUpdates();
-        }
-    }
-
-    public void onClickStartButton(View view) {
-        Log.d(TAG, "onClickStartButton()");
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(DocomoAPIInterface.END_POINT)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        DocomoAPIInterface service = retrofit.create(DocomoAPIInterface.class);
-        service.getMountainData(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude(), azimuth, alturaH, 45, getString(R.string.DOCOMO_API_KEY)).enqueue(new Callback<MountainRepository>() {
-            @Override
-            public void onResponse(Call<MountainRepository> call, Response<MountainRepository> response) {
-                Log.d(TAG, "Succeed to request");
-                MountainRepository mr = response.body();
-                if (mr != null) {
-                    ArrayList<Entry> entries = new ArrayList<Entry>();
-                    List<Integer> list = mr.getRidge();
-                    for (int i = 0; i < list.size(); i++) {
-                        entries.add(new Entry(i, list.get(i)));
-                    }
-                    //データをセット
-                    LineDataSet dataSet = new LineDataSet(entries, "weight");
-                    //LineDataインスタンス生成
-                    LineData data = new LineData(dataSet);
-                    //LineDataをLineChartにセット
-                    lineChart.setData(data);
-
-                    //背景色
-                    lineChart.setBackgroundColor(Color.WHITE);
-
-                    //アニメーション
-                    lineChart.animateX(1200);
-                }
-            }
-
-            @Override
-            public void onFailure(Call<MountainRepository> call, Throwable t) {
-                Log.d(TAG, "Failed to request");
-                Log.d(TAG, t.toString());
-            }
-        });
-    }
-
-    private void setLocation() {
-        Log.d(TAG, "setLocation");
-        if (mCurrentLocation != null) {
-            textView1.setText("Latitude:" + mCurrentLocation.getLatitude());
-            textView2.setText("Longitude:" + mCurrentLocation.getLongitude());
-        }
     }
 
     @Override
@@ -384,5 +349,48 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     private float rad2deg(float rad) {
         return rad * (float) 180.0 / (float) Math.PI;
+    }
+
+    public void onClickStartButton(View view) {
+        Log.d(TAG, "onClickStartButton()");
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(DocomoAPIInterface.END_POINT)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        DocomoAPIInterface service = retrofit.create(DocomoAPIInterface.class);
+        service.getMountainData(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude(), azimuth, alturaH, 45, getString(R.string.DOCOMO_API_KEY)).enqueue(new Callback<MountainRepository>() {
+            @Override
+            public void onResponse(Call<MountainRepository> call, Response<MountainRepository> response) {
+                Log.d(TAG, "Succeed to request");
+                MountainRepository mr = response.body();
+                if (mr != null) {
+                    ArrayList<Entry> entries = new ArrayList<Entry>();
+                    List<Integer> list = mr.getRidge();
+                    for (int i = 0; i < list.size(); i++) {
+                        entries.add(new Entry(i, list.get(i)));
+                    }
+                    //データをセット
+                    LineDataSet dataSet = new LineDataSet(entries, "weight");
+                    //LineDataインスタンス生成
+                    LineData data = new LineData(dataSet);
+                    //LineDataをLineChartにセット
+                    lineChart.setData(data);
+
+                    //背景色
+                    lineChart.setBackgroundColor(Color.WHITE);
+
+                    //アニメーション
+                    lineChart.animateX(1200);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<MountainRepository> call, Throwable t) {
+                Log.d(TAG, "Failed to request");
+                Log.d(TAG, t.toString());
+            }
+        });
     }
 }
