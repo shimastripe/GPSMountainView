@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
     private Location lastLocation;
+
     private enum UpdatingState {STOPPED, REQUESTING, STARTED}
 
     private UpdatingState state = UpdatingState.STOPPED;
@@ -70,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     // View
     private TextView textView1, textView2, textView3;
     private LineChart lineChart;
+    private List<Integer> ridges;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,6 +103,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             return;
         }
         lineChart = (LineChart) findViewById(R.id.chart1);
+
+        if (savedInstanceState != null) {
+            ridges = savedInstanceState.getIntegerArrayList("RIDGES");
+            DrawGraph();
+        }
     }
 
     protected synchronized void buildGoogleApiClient() {
@@ -288,24 +295,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             public void onResponse(Call<MountainRepository> call, Response<MountainRepository> response) {
                 Log.d(TAG, "Succeed to request");
                 MountainRepository mr = response.body();
+
                 if (mr != null) {
-                    ArrayList<Entry> entries = new ArrayList<Entry>();
-                    List<Integer> list = mr.getRidge();
-                    for (int i = 0; i < list.size(); i++) {
-                        entries.add(new Entry(i, list.get(i)));
-                    }
-                    //データをセット
-                    LineDataSet dataSet = new LineDataSet(entries, "weight");
-                    //LineDataインスタンス生成
-                    LineData data = new LineData(dataSet);
-                    //LineDataをLineChartにセット
-                    lineChart.setData(data);
-
-                    //背景色
-                    lineChart.setBackgroundColor(Color.WHITE);
-
-                    //アニメーション
-                    lineChart.animateX(1200);
+                    ridges = mr.getRidge();
+                    DrawGraph();
                 }
             }
 
@@ -315,5 +308,32 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 Log.d(TAG, t.toString());
             }
         });
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putIntegerArrayList("RIDGES", (ArrayList<Integer>) ridges);
+    }
+
+    private void DrawGraph() {
+        ArrayList<Entry> entries = new ArrayList<Entry>();
+
+        for (int i = 0; i < ridges.size(); i++) {
+            entries.add(new Entry(i, ridges.get(i)));
+        }
+
+        //データをセット
+        LineDataSet dataSet = new LineDataSet(entries, "稜線");
+        //LineDataインスタンス生成
+        LineData data = new LineData(dataSet);
+        //LineDataをLineChartにセット
+        lineChart.setData(data);
+
+        //背景色
+        lineChart.setBackgroundColor(Color.WHITE);
+
+        //アニメーション
+        lineChart.animateX(1200);
     }
 }
