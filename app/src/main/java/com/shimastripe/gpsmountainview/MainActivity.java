@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private final static int REQCODE_PERMISSIONS = 1111;
 
     // View
-    private TextView textView1, textView2, textView3;
+    private TextView textView1, textView2, textView3, textView4, textView5;
     private LineChart lineChart;
     private List<Integer> ridges;
 
@@ -82,6 +82,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         textView1 = (TextView) findViewById(R.id.text_view1);
         textView2 = (TextView) findViewById(R.id.text_view2);
         textView3 = (TextView) findViewById(R.id.text_view3);
+        textView4 = (TextView) findViewById(R.id.text_view4);
+        textView5 = (TextView) findViewById(R.id.text_view5);
 
         buildGoogleApiClient();
         createLocationRequest();
@@ -224,8 +226,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     private void displayLocation(Location loc) {
         Log.d(TAG, "displayLocation");
-        textView1.setText("Latitude:" + loc.getLatitude());
-        textView2.setText("Longitude:" + loc.getLongitude());
+        textView1.setText(String.format("Latitude:\n\t%f\n", loc.getLatitude()));
+        textView2.setText(String.format("Longtitude:\n\t%f\n", loc.getLongitude()));
     }
 
     @Override
@@ -268,12 +270,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             alturaV = rad2deg(fAttitude[1]);
             alturaH = rad2deg(fAttitude[2]);
 
-            String buf =
-                    "---------- Orientation --------\n" +
-                            String.format("方位角\n\t%f\n", azimuth) +
-                            String.format("前後の傾斜(縦向き)\n\t%f\n", alturaV) +
-                            String.format("左右の傾斜(縦向き)\n\t%f\n", alturaH);
-            textView3.setText(buf);
+            textView3.setText(String.format("方位角\n\t%f\n", azimuth));
+            textView4.setText(String.format("前後の傾斜(縦向き):\n\t%f\n", alturaV));
+            textView5.setText(String.format("左右の傾斜(縦向き):\n\t%f\n", alturaH));
         }
     }
 

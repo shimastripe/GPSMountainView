@@ -16,48 +16,91 @@
         <android.widget.LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_margin="@dimen/fab_margin"
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/text_view1"
-                android:textSize="20sp"
-                android:layout_margin="20dp"
-                android:textColor="#44f"
+                android:id="@+id/text_view0"
+                android:text="------- GPS -------"
+                android:textStyle="bold"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_margin="20dp"
+                android:textColor="#2f4f4f"
+                android:textSize="24sp" />
+
+            <TextView
+                android:id="@+id/text_view1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:textColor="#008b8b"
+                android:textSize="20sp" />
 
             <TextView
                 android:id="@+id/text_view2"
-                android:textSize="20sp"
-                android:textColor="#f44"
-                android:layout_margin="20dp"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:textColor="#008b8b"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/text_view00"
+                android:text="------- Orientation -------"
+                android:textStyle="bold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:textColor="#2f4f4f"
+                android:textSize="24sp" />
 
             <TextView
                 android:id="@+id/text_view3"
-                android:textSize="20sp"
-                android:textColor="#f44"
-                android:layout_margin="20dp"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:textColor="#008b8b"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/text_view4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:textColor="#008b8b"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/text_view5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:textColor="#008b8b"
+                android:textSize="20sp" />
         </android.widget.LinearLayout>
 
-        <com.github.mikephil.charting.charts.LineChart
-            android:id="@+id/chart1"
-            android:layout_weight="1"
+        <android.widget.LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+            android:layout_margin="@dimen/fab_margin"
+            android:orientation="vertical">
 
+            <com.github.mikephil.charting.charts.LineChart
+                android:id="@+id/chart1"
+                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/fab"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_margin="@dimen/container_margin"
+                android:onClick="onClickStartButton"
+                app:srcCompat="@android:drawable/ic_menu_mylocation" />
+
+        </android.widget.LinearLayout>
     </android.widget.LinearLayout>
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
-        android:onClick="onClickStartButton"
-        app:srcCompat="@android:drawable/ic_menu_mylocation" />
-
 </android.widget.LinearLayout>
