@@ -21,7 +21,7 @@
 
             <TextView
                 android:id="@+id/text_view0"
-                android:text="------- GPS -------"
+                android:text="@string/gps"
                 android:textStyle="bold"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -47,7 +47,7 @@
 
             <TextView
                 android:id="@+id/text_view00"
-                android:text="------- Orientation -------"
+                android:text="@string/orientation"
                 android:textStyle="bold"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

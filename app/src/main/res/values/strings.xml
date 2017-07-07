@@ -2,4 +2,6 @@
     <string name="app_name">GPSMountainView</string>
     <string name="toast_no_accel_error">No accelerometers available</string>
     <string name="toast_requires_permission">This application requires permission %s</string>
+    <string name="gps">--------- GPS ---------</string>
+    <string name="orientation">"----- Orientation -----"</string>
 </resources>
