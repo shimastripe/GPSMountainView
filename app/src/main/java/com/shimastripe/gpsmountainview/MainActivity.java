@@ -104,8 +104,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             finish();
             return;
         }
-        lineChart = (LineChart) findViewById(R.id.chart1);
 
+        lineChart = (LineChart) findViewById(R.id.chart1);
         if (savedInstanceState != null) {
             ridges = savedInstanceState.getIntegerArrayList("RIDGES");
             DrawGraph();
@@ -187,7 +187,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public void onLocationChanged(Location location) {
         Log.d(TAG, "onLocationChanged");
         lastLocation = location;
-        displayLocation(location);
+        displayLocation();
     }
 
     @Override
@@ -224,10 +224,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         state = UpdatingState.STOPPED;
     }
 
-    private void displayLocation(Location loc) {
+    private void displayLocation() {
         Log.d(TAG, "displayLocation");
-        textView1.setText(String.format("Latitude:\n\t%f\n", loc.getLatitude()));
-        textView2.setText(String.format("Longtitude:\n\t%f\n", loc.getLongitude()));
+        textView1.setText(String.format("Latitude:\n\t%f\n", lastLocation.getLatitude()));
+        textView2.setText(String.format("Longtitude:\n\t%f\n", lastLocation.getLongitude()));
     }
 
     @Override
@@ -269,15 +269,18 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             azimuth = rad2deg(fAttitude[0]);
             alturaV = rad2deg(fAttitude[1]);
             alturaH = rad2deg(fAttitude[2]);
-
-            textView3.setText(String.format("方位角\n\t%f\n", azimuth));
-            textView4.setText(String.format("前後の傾斜(縦向き):\n\t%f\n", alturaV));
-            textView5.setText(String.format("左右の傾斜(縦向き):\n\t%f\n", alturaH));
+            displayOrientation();
         }
     }
 
     private float rad2deg(float rad) {
         return rad * (float) 180.0 / (float) Math.PI;
+    }
+
+    private void displayOrientation() {
+        textView3.setText(String.format("方位角\n\t%f\n", azimuth));
+        textView4.setText(String.format("前後の傾斜(縦向き):\n\t%f\n", alturaV));
+        textView5.setText(String.format("左右の傾斜(縦向き):\n\t%f\n", alturaH));
     }
 
     public void onClickStartButton(View view) {
