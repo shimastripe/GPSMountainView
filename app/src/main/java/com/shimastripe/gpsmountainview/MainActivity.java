@@ -19,10 +19,11 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.data.LineData;
-import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -70,7 +71,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     // View
     private TextView textView1, textView2, textView3, textView4, textView5;
-    private LineChart lineChart;
+    private BarChart lineChart;
     private List<Integer> ridges;
 
     @Override
@@ -89,6 +90,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         createLocationRequest();
 
         sensorMgr = (SensorManager) getSystemService(SENSOR_SERVICE);
+
         accelerometer = sensorMgr.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         if (accelerometer == null) {
             Toast.makeText(this, getString(R.string.toast_no_accel_error),
@@ -105,10 +107,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             return;
         }
 
-        lineChart = (LineChart) findViewById(R.id.chart1);
+        lineChart = (BarChart) findViewById(R.id.chart1);
+
+        initGraph();
         if (savedInstanceState != null) {
             ridges = savedInstanceState.getIntegerArrayList("RIDGES");
-            DrawGraph();
+            drawGraph();
         }
     }
 
@@ -300,7 +304,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
                 if (mr != null) {
                     ridges = mr.getRidge();
-                    DrawGraph();
+                    drawGraph();
                 }
             }
 
@@ -318,17 +322,31 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         outState.putIntegerArrayList("RIDGES", (ArrayList<Integer>) ridges);
     }
 
-    private void DrawGraph() {
-        ArrayList<Entry> entries = new ArrayList<Entry>();
+    private void initGraph() {
+        lineChart.setNoDataText("Please push the button below !!");
+        lineChart.setTouchEnabled(true);
+        lineChart.setScaleEnabled(true);
+        lineChart.setScaleYEnabled(true);
+        lineChart.setPinchZoom(true);
+        lineChart.setDoubleTapToZoomEnabled(true);
+        YAxis rightAxis = lineChart.getAxisRight();
+        rightAxis.setEnabled(false);
+    }
+
+    private void drawGraph() {
+        ArrayList<BarEntry> entries = new ArrayList<BarEntry>();
 
         for (int i = 0; i < ridges.size(); i++) {
-            entries.add(new Entry(i, ridges.get(i)));
+            entries.add(new BarEntry(i, ridges.get(i)));
         }
 
         //データをセット
-        LineDataSet dataSet = new LineDataSet(entries, "稜線");
+        BarDataSet dataSet = new BarDataSet(entries, "山の稜線");
+        dataSet.setColor(Color.parseColor("#ff4500"));
+
         //LineDataインスタンス生成
-        LineData data = new LineData(dataSet);
+        BarData data = new BarData(dataSet);
+
         //LineDataをLineChartにセット
         lineChart.setData(data);
 

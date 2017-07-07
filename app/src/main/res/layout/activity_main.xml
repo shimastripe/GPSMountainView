@@ -86,7 +86,7 @@
             android:layout_margin="@dimen/fab_margin"
             android:orientation="vertical">
 
-            <com.github.mikephil.charting.charts.LineChart
+            <com.github.mikephil.charting.charts.BarChart
                 android:id="@+id/chart1"
                 android:layout_weight="1"
                 android:layout_width="match_parent"
