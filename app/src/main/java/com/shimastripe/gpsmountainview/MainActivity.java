@@ -361,7 +361,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             entries.add(new BarEntry(i, ridges.get(i)));
         }
 
-        BarDataSet dataSet = new BarDataSet(entries, "山の稜線");
+        BarDataSet dataSet = new BarDataSet(entries, "稜線");
         dataSet.setColor(Color.parseColor("#ff4500"));
 
         //LineDataインスタンス生成
@@ -376,6 +376,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             Mountain summit = summits.get(i);
             lEntries.add(new Entry(summit.getX() - 1, summit.getY()));
             LineDataSet lDataset = new LineDataSet(lEntries, "頂点");
+            lDataset.setDrawCircleHole(false);
             lDataset.setLabel(summit.getName());
             LineData lData = new LineData(lDataset);
             cData.setData(lData);
