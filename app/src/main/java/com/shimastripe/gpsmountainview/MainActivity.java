@@ -19,18 +19,23 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.charts.CombinedChart;
 import com.github.mikephil.charting.components.Description;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.CombinedData;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,8 +77,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     // View
     private TextView textView1, textView2, textView3, textView4, textView5;
-    private BarChart lineChart;
+    private CombinedChart lineChart;
     private List<Integer> ridges;
+    private List<Mountain> summits;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,12 +114,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             return;
         }
 
-        lineChart = (BarChart) findViewById(R.id.chart1);
+        lineChart = (CombinedChart) findViewById(R.id.chart1);
 
         initGraph();
         if (savedInstanceState != null) {
             ridges = savedInstanceState.getIntegerArrayList("RIDGES");
-            if (ridges != null) {
+            summits = (ArrayList<Mountain>)savedInstanceState.getSerializable("SUMMITS");
+            if (ridges != null && summits != null) {
                 drawGraph();
             }
         }
@@ -299,7 +306,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 .build();
 
         DocomoAPIInterface service = retrofit.create(DocomoAPIInterface.class);
-        service.getMountainData(lastLocation.getLatitude(), lastLocation.getLongitude(), azimuth, alturaH, 45, getString(R.string.DOCOMO_API_KEY)).enqueue(new Callback<MountainRepository>() {
+        service.getMountainData(lastLocation.getLatitude(), lastLocation.getLongitude(), azimuth, alturaH - 30, 45, getString(R.string.DOCOMO_API_KEY)).enqueue(new Callback<MountainRepository>() {
             @Override
             public void onResponse(Call<MountainRepository> call, Response<MountainRepository> response) {
                 Log.d(TAG, "Succeed to request");
@@ -307,6 +314,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
                 if (mr != null) {
                     ridges = mr.getRidge();
+                    summits = mr.getSummit();
                     drawGraph();
                 }
             }
@@ -323,6 +331,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putIntegerArrayList("RIDGES", (ArrayList<Integer>) ridges);
+        outState.putSerializable("SUMMITS", (Serializable) summits);
     }
 
     private void initGraph() {
@@ -343,23 +352,37 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     private void drawGraph() {
         Log.d(TAG, "drawGraph");
+        CombinedData cData = new CombinedData();
+
+        //データをセット
         ArrayList<BarEntry> entries = new ArrayList<BarEntry>();
 
         for (int i = 0; i < ridges.size(); i++) {
             entries.add(new BarEntry(i, ridges.get(i)));
         }
 
-        //データをセット
         BarDataSet dataSet = new BarDataSet(entries, "山の稜線");
         dataSet.setColor(Color.parseColor("#ff4500"));
 
         //LineDataインスタンス生成
-        BarData data = new BarData(dataSet);
-        data.setDrawValues(false);
-        data.setBarWidth(1.0f);
+        BarData bData = new BarData(dataSet);
+        bData.setDrawValues(false);
+        bData.setBarWidth(1.0f);
+
+        cData.setData(bData);
+
+        for (int i = 0; i < summits.size(); i++) {
+            ArrayList<Entry> lEntries = new ArrayList<Entry>();
+            Mountain summit = summits.get(i);
+            lEntries.add(new Entry(summit.getX() - 1, summit.getY()));
+            LineDataSet lDataset = new LineDataSet(lEntries, "頂点");
+            lDataset.setLabel(summit.getName());
+            LineData lData = new LineData(lDataset);
+            cData.setData(lData);
+        }
 
         //LineDataをLineChartにセット
-        lineChart.setData(data);
+        lineChart.setData(cData);
 
         //背景色
         lineChart.setBackgroundColor(Color.WHITE);
