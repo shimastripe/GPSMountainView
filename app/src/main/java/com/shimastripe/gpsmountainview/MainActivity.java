@@ -20,6 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.components.Description;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
@@ -326,6 +327,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     private void initGraph() {
         Log.d(TAG, "initGraph");
+        Description desc = new Description();
+        desc.setText("山の稜線を描画");
+        desc.setTextColor(Color.WHITE);
+        lineChart.setDescription(desc);
         lineChart.setNoDataText("Please push the button below !!");
         lineChart.setTouchEnabled(true);
         lineChart.setScaleEnabled(true);
