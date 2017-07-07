@@ -355,6 +355,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         //LineDataインスタンス生成
         BarData data = new BarData(dataSet);
+        data.setDrawValues(false);
+        data.setBarWidth(1.0f);
 
         //LineDataをLineChartにセット
         lineChart.setData(data);
