@@ -112,7 +112,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         initGraph();
         if (savedInstanceState != null) {
             ridges = savedInstanceState.getIntegerArrayList("RIDGES");
-            drawGraph();
+            if (ridges != null) {
+                drawGraph();
+            }
         }
     }
 
@@ -323,6 +325,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     private void initGraph() {
+        Log.d(TAG, "initGraph");
         lineChart.setNoDataText("Please push the button below !!");
         lineChart.setTouchEnabled(true);
         lineChart.setScaleEnabled(true);
@@ -334,6 +337,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     private void drawGraph() {
+        Log.d(TAG, "drawGraph");
         ArrayList<BarEntry> entries = new ArrayList<BarEntry>();
 
         for (int i = 0; i < ridges.size(); i++) {
