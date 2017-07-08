@@ -15,6 +15,8 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Display;
+import android.view.Surface;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,7 +32,6 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.ScatterData;
 import com.github.mikephil.charting.data.ScatterDataSet;
 import com.github.mikephil.charting.interfaces.datasets.IScatterDataSet;
-import com.github.mikephil.charting.utils.ColorTemplate;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -53,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private final static String TAG = "MainActivity";
 
     // View
-    private TextView textView1, textView2, textView3, textView4, textView5;
+    private TextView textView1, textView2, textView3, textView4;
 
     // Sensor
     private SensorManager sensorMgr;
@@ -62,8 +63,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private float[] fAccell = null;
     private float[] fMagnetic = null;
     private float azimuth;
-    private float alturaV;
-    private float alturaH;
+    private float altura;
 
     // GPS
     private GoogleApiClient mGoogleApiClient;
@@ -110,7 +110,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         textView2 = (TextView) findViewById(R.id.text_view2);
         textView3 = (TextView) findViewById(R.id.text_view3);
         textView4 = (TextView) findViewById(R.id.text_view4);
-        textView5 = (TextView) findViewById(R.id.text_view5);
 
         buildGoogleApiClient();
         createLocationRequest();
@@ -299,9 +298,24 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     outR,
                     fAttitude);
 
-            azimuth = rad2deg(fAttitude[0]);
-            alturaV = rad2deg(fAttitude[1]);
-            alturaH = rad2deg(fAttitude[2]);
+            azimuth = rad2deg(fAttitude[0]) + 180; // 0~360
+            float alturaV = rad2deg(fAttitude[1]);
+            float alturaH = rad2deg(fAttitude[2]);
+
+            switch (getRotationValue()) {
+                case 0:
+                    altura = alturaV * -1;
+                    break;
+                case 90:
+                    altura = alturaH * -1;
+                    break;
+                case 180:
+                    altura = alturaV;
+                    break;
+                case 270:
+                    altura = alturaH;
+                    break;
+            }
             displayOrientation();
         }
     }
@@ -312,8 +326,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     private void displayOrientation() {
         textView3.setText(String.format("方位角\n\t%f\n", azimuth));
-        textView4.setText(String.format("前後の傾斜(縦向き):\n\t%f\n", alturaV));
-        textView5.setText(String.format("左右の傾斜(縦向き):\n\t%f\n", alturaH));
+        textView4.setText(String.format("仰俯角:\n\t%f\n", altura));
     }
 
     public void onClickStartButton(View view) {
@@ -325,7 +338,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 .build();
 
         final DocomoAPIInterface service = retrofit.create(DocomoAPIInterface.class);
-        service.getMountainData(lastLocation.getLatitude(), lastLocation.getLongitude(), azimuth, alturaH - 30, 45, getString(R.string.DOCOMO_API_KEY)).enqueue(new Callback<MountainRepository>() {
+        service.getMountainData(lastLocation.getLatitude(), lastLocation.getLongitude(), azimuth, altura - 30, 45, getString(R.string.DOCOMO_API_KEY)).enqueue(new Callback<MountainRepository>() {
             @Override
             public void onResponse(Call<MountainRepository> call, Response<MountainRepository> response) {
                 Log.d(TAG, "Succeed to request");
@@ -357,7 +370,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         Log.d(TAG, "initGraph");
         Description desc = new Description();
         desc.setText("山の稜線を描画");
-        desc.setTextColor(Color.WHITE);
+        desc.setTextColor(Color.parseColor("#f4a460"));
         lineChart.setDescription(desc);
         lineChart.setNoDataText("Please push the button below !!");
         lineChart.setTouchEnabled(true);
@@ -391,7 +404,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         cData.setData(bData);
 
         ArrayList<IScatterDataSet> sDatasets = new ArrayList<IScatterDataSet>();
-        Log.d(TAG, "" + ColorTemplate.COLORFUL_COLORS.length);
 
         for (int i = 0; i < summits.size(); i++) {
             ArrayList<Entry> lEntries = new ArrayList<Entry>();
@@ -414,5 +426,31 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         //アニメーション
         lineChart.animateX(2000);
+    }
+
+    private int getRotationValue() {
+        int val = -1;
+
+        Display d = getWindowManager().getDefaultDisplay();
+        int rotation = d.getRotation();
+        switch(rotation) {
+            case Surface.ROTATION_0:
+                val = 0;
+                break;
+
+            case Surface.ROTATION_90:
+                val = 90;
+                break;
+
+            case Surface.ROTATION_180:
+                val = 180;
+                break;
+
+            case Surface.ROTATION_270:
+                val = 270;
+                break;
+        }
+
+        return val;
     }
 }

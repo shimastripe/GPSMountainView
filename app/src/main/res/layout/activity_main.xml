@@ -70,14 +70,6 @@
                 android:layout_margin="8dp"
                 android:textColor="#008b8b"
                 android:textSize="20sp" />
-
-            <TextView
-                android:id="@+id/text_view5"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:textColor="#008b8b"
-                android:textSize="20sp" />
         </android.widget.LinearLayout>
 
         <android.widget.LinearLayout
@@ -92,15 +84,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"/>
 
-            <android.support.design.widget.FloatingActionButton
-                android:id="@+id/fab"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|end"
-                android:layout_margin="@dimen/container_margin"
-                android:onClick="onClickStartButton"
-                app:srcCompat="@android:drawable/ic_menu_mylocation" />
-
         </android.widget.LinearLayout>
     </android.widget.LinearLayout>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/container_margin"
+        android:onClick="onClickStartButton"
+        app:srcCompat="@android:drawable/ic_menu_mylocation" />
 </android.widget.LinearLayout>
