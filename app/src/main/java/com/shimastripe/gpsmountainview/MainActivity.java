@@ -29,6 +29,10 @@ import com.github.mikephil.charting.data.CombinedData;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.data.ScatterData;
+import com.github.mikephil.charting.data.ScatterDataSet;
+import com.github.mikephil.charting.interfaces.datasets.IScatterDataSet;
+import com.github.mikephil.charting.utils.ColorTemplate;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -38,6 +42,7 @@ import com.google.android.gms.location.LocationServices;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -49,6 +54,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         SensorEventListener {
 
     private final static String TAG = "MainActivity";
+
+    // View
+    private TextView textView1, textView2, textView3, textView4, textView5;
 
     // Sensor
     private SensorManager sensorMgr;
@@ -75,11 +83,25 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     };
     private final static int REQCODE_PERMISSIONS = 1111;
 
-    // View
-    private TextView textView1, textView2, textView3, textView4, textView5;
+    // Graph
     private CombinedChart lineChart;
     private List<Integer> ridges;
     private List<Mountain> summits;
+    private final static String[] mColors = {
+            "#39add1", // light blue
+            "#3079ab", // dark blue
+            "#c25975", // mauve
+            "#e15258", // red
+            "#f9845b", // orange
+            "#838cc7", // lavender
+            "#7d669e", // purple
+            "#53bbb4", // aqua
+            "#51b46d", // green
+            "#e0ab18", // mustard
+            "#637a91", // dark gray
+            "#f092b0", // pink
+            "#b7c0c7"  // light gray
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         initGraph();
         if (savedInstanceState != null) {
             ridges = savedInstanceState.getIntegerArrayList("RIDGES");
-            summits = (ArrayList<Mountain>)savedInstanceState.getSerializable("SUMMITS");
+            summits = (ArrayList<Mountain>) savedInstanceState.getSerializable("SUMMITS");
             if (ridges != null && summits != null) {
                 drawGraph();
             }
@@ -305,7 +327,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
-        DocomoAPIInterface service = retrofit.create(DocomoAPIInterface.class);
+        final DocomoAPIInterface service = retrofit.create(DocomoAPIInterface.class);
         service.getMountainData(lastLocation.getLatitude(), lastLocation.getLongitude(), azimuth, alturaH - 30, 45, getString(R.string.DOCOMO_API_KEY)).enqueue(new Callback<MountainRepository>() {
             @Override
             public void onResponse(Call<MountainRepository> call, Response<MountainRepository> response) {
@@ -315,6 +337,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 if (mr != null) {
                     ridges = mr.getRidge();
                     summits = mr.getSummit();
+                    Log.d(TAG, "summit : " + summits.size());
                     drawGraph();
                 }
             }
@@ -362,7 +385,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
 
         BarDataSet dataSet = new BarDataSet(entries, "稜線");
-        dataSet.setColor(Color.parseColor("#ff4500"));
+        dataSet.setColor(Color.parseColor("#ffe4b5"));
 
         //LineDataインスタンス生成
         BarData bData = new BarData(dataSet);
@@ -371,16 +394,21 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         cData.setData(bData);
 
+        ArrayList<IScatterDataSet> sDatasets = new ArrayList<IScatterDataSet>();
+        Log.d(TAG, "" + ColorTemplate.COLORFUL_COLORS.length);
+
         for (int i = 0; i < summits.size(); i++) {
             ArrayList<Entry> lEntries = new ArrayList<Entry>();
             Mountain summit = summits.get(i);
             lEntries.add(new Entry(summit.getX() - 1, summit.getY()));
-            LineDataSet lDataset = new LineDataSet(lEntries, "頂点");
-            lDataset.setDrawCircleHole(false);
-            lDataset.setLabel(summit.getName());
-            LineData lData = new LineData(lDataset);
-            cData.setData(lData);
+            ScatterDataSet sDataset = new ScatterDataSet(lEntries, "頂点");
+            sDataset.setLabel(summit.getName());
+            sDataset.setColor(Color.parseColor(mColors[i]));
+            sDatasets.add(sDataset);
         }
+        ScatterData sData = new ScatterData(sDatasets);
+        cData.setData(sData);
+
 
         //LineDataをLineChartにセット
         lineChart.setData(cData);
@@ -389,6 +417,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         lineChart.setBackgroundColor(Color.WHITE);
 
         //アニメーション
-        lineChart.animateX(1200);
+        lineChart.animateX(2000);
     }
 }
