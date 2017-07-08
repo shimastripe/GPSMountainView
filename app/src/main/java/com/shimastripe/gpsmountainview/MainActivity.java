@@ -27,8 +27,6 @@ import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.CombinedData;
 import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.data.LineData;
-import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.data.ScatterData;
 import com.github.mikephil.charting.data.ScatterDataSet;
 import com.github.mikephil.charting.interfaces.datasets.IScatterDataSet;
@@ -42,7 +40,6 @@ import com.google.android.gms.location.LocationServices;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -337,7 +334,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 if (mr != null) {
                     ridges = mr.getRidge();
                     summits = mr.getSummit();
-                    Log.d(TAG, "summit : " + summits.size());
                     drawGraph();
                 }
             }
