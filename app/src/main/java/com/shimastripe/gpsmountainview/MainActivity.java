@@ -338,7 +338,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 .build();
 
         final DocomoAPIInterface service = retrofit.create(DocomoAPIInterface.class);
-        service.getMountainData(lastLocation.getLatitude(), lastLocation.getLongitude(), azimuth, altura - 30, 45, getString(R.string.DOCOMO_API_KEY)).enqueue(new Callback<MountainRepository>() {
+        service.getMountainData(lastLocation.getLatitude(), lastLocation.getLongitude(), azimuth, altura, 45, getString(R.string.DOCOMO_API_KEY)).enqueue(new Callback<MountainRepository>() {
             @Override
             public void onResponse(Call<MountainRepository> call, Response<MountainRepository> response) {
                 Log.d(TAG, "Succeed to request");
