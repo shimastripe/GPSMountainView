@@ -58,11 +58,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     // Sensor
     private SensorManager sensorMgr;
-    private Sensor accelerometer;
-    private Sensor magneticField;
     private float[] fAccell = null;
     private float[] fMagnetic = null;
-    private float azimuth;
+    private float angle;
     private float altura;
 
     // GPS
@@ -116,22 +114,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         sensorMgr = (SensorManager) getSystemService(SENSOR_SERVICE);
 
-        accelerometer = sensorMgr.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        if (accelerometer == null) {
-            Toast.makeText(this, getString(R.string.toast_no_accel_error),
-                    Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
-
-        magneticField = sensorMgr.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-        if (magneticField == null) {
-            Toast.makeText(this, getString(R.string.toast_no_accel_error),
-                    Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
-
         lineChart = (CombinedChart) findViewById(R.id.chart1);
 
         initGraph();
@@ -173,8 +155,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     protected void onResume() {
         super.onResume();
         Log.i(TAG, "onResume");
-        sensorMgr.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
-        sensorMgr.registerListener(this, magneticField, SensorManager.SENSOR_DELAY_FASTEST);
+        sensorMgr.registerListener(this, sensorMgr.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_FASTEST);
+        sensorMgr.registerListener(this, sensorMgr.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), SensorManager.SENSOR_DELAY_FASTEST);
 
         if (state != UpdatingState.STARTED && mGoogleApiClient.isConnected())
             startLocationUpdate(true);
@@ -279,28 +261,18 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
 
         if (fAccell != null && fMagnetic != null) {
-            // 回転行列を得る
-            float[] inR = new float[9];
-            SensorManager.getRotationMatrix(
-                    inR,
-                    null,
-                    fAccell,
-                    fMagnetic);
-            // ワールド座標とデバイス座標のマッピングを変換する
-            float[] outR = new float[9];
-            SensorManager.remapCoordinateSystem(
-                    inR,
-                    SensorManager.AXIS_X, SensorManager.AXIS_Y,
-                    outR);
-            // 姿勢を得る
-            float[] fAttitude = new float[3];
-            SensorManager.getOrientation(
-                    outR,
-                    fAttitude);
+            float[] orientation = new float[3];
+            float[] R = new float[16];
+            float[] I = new float[16];
 
-            azimuth = rad2deg(fAttitude[0]) + 180; // 0~360
-            float alturaV = rad2deg(fAttitude[1]);
-            float alturaH = rad2deg(fAttitude[2]);
+            SensorManager.getRotationMatrix(R, I, fAccell, fMagnetic);
+            SensorManager.getOrientation(R, orientation);
+            angle = (float) Math.floor(Math.toDegrees(orientation[0]));
+            angle += 180;
+            Log.d(TAG, "" + angle);
+
+            float alturaV = rad2deg(orientation[1]);
+            float alturaH = rad2deg(orientation[2]);
 
             switch (getRotationValue()) {
                 case 0:
@@ -325,7 +297,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     private void displayOrientation() {
-        textView3.setText(String.format("方位角\n\t%f\n", azimuth));
+        textView3.setText(String.format("方位角\n\t%f\n", angle));
         textView4.setText(String.format("仰俯角:\n\t%f\n", altura));
     }
 
@@ -338,7 +310,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 .build();
 
         final DocomoAPIInterface service = retrofit.create(DocomoAPIInterface.class);
-        service.getMountainData(lastLocation.getLatitude(), lastLocation.getLongitude(), azimuth, altura, 45, getString(R.string.DOCOMO_API_KEY)).enqueue(new Callback<MountainRepository>() {
+        service.getMountainData(lastLocation.getLatitude(), lastLocation.getLongitude(), angle, altura, 45, getString(R.string.DOCOMO_API_KEY)).enqueue(new Callback<MountainRepository>() {
             @Override
             public void onResponse(Call<MountainRepository> call, Response<MountainRepository> response) {
                 Log.d(TAG, "Succeed to request");
